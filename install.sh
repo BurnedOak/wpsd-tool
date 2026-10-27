@@ -17,12 +17,21 @@ echo -e "${BLUE}================================================================
 echo -e "${BLUE}        Installiere WPSD DMRGateway Schutz-Skript (dmr-chk)         ${NC}"
 echo -e "${BLUE}====================================================================${NC}"
 
+# WPSD-Dateisystem schreibbar machen (SD-Karten Schreibschutz temporär aufheben)
+mount -o remount,rw / || true
+
 # 1. Das eigentliche Skript schreiben
 cat << 'EOF' > /usr/sbin/dmr-chk
 #!/bin/bash
 # ==============================================================================
 # dmr-chk - WPSD DMRGateway Config Protector & Interactive Updater
 # ==============================================================================
+
+# ------------------------------------------------------------------------------
+# WPSD FS-Schutz: Dateisystem schreibbar machen und am Ende IMMER wieder sperren
+mount -o remount,rw / || true
+trap 'mount -o remount,ro / || true' EXIT
+# ------------------------------------------------------------------------------
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -232,11 +241,15 @@ EOF
 # 2. Ausführungsrechte vergeben
 chmod +x /usr/sbin/dmr-chk
 
-# 3. Den unschönen lokalen Symlink entfernen (falls du ihn vorher angelegt hattest)
+# 3. Den unschönen lokalen Symlink entfernen (falls vorhanden)
 rm -f /usr/local/sbin/dmr-chk
+
+# Installer-Schreibschutz wieder aktivieren
+mount -o remount,ro / || true
 
 echo -e "${GREEN}Installation erfolgreich! Das Kommando 'dmr-chk' ist nun systemweit aktiv.${NC}"
 echo -e "Starte den initialen Durchlauf...\n"
 
 # 4. Direkt starten
+/usr/sbin/dmr-chk
 /usr/sbin/dmr-chk
