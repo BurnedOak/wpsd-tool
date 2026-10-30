@@ -1,0 +1,177 @@
+#!/bin/bash
+# dmr-chk - WPSD dmrgateway protector & analyzer
+# Zielsystem: wpsd-12 (10.0.0.211)
+
+target_file="/etc/dmrgateway"
+master_backup="/home/pi-star/dmrgateway.master"
+log_file="/home/pi-star/dmr-chk_log.txt"
+
+# --- Diagnose & Analyse ---
+analyze_config() {
+    echo -e "\n\e[1;36m=== DMRGateway Status-Matrix ===\e[0m"
+    awk -F '=' '
+    /^\[/ {
+        if (section != "" && has_enabled == 1) {
+            status_color = (enabled == 1) ? "\033[1;32m🟢 AKTIV  \033[0m" : "\033[1;31m🔴 INAKTIV\033[0m";
+            printf "%s %-22s", status_color, section;
+            if (name != "") printf " | %-20s", name;
+            if (port != "") printf " | Port: %s", port;
+            printf "\n";
+            
+            if (enabled == 1) {
+                if (options != "") printf "%s\n", options;
+                if (rules != "") printf "%s", rules;
+                printf "\n";
+            }
+        }
+        section = $0;
+        enabled = "";
+        has_enabled = 0;
+        name = "";
+        port = "";
+        options = "";
+        rules = "";
+        next;
+    }
+    $1 == "Enabled" || $1 == "Enable" { enabled = $2; has_enabled = 1 }
+    $1 == "Name" { name = $2 }
+    $1 == "Port" { port = $2 }
+    
+    # Options-Kette in Klartext übersetzen
+    $1 == "Options" { 
+        opt_raw = $0
+        opt_val = $0; sub(/^Options="/, "", opt_val); sub(/"$/, "", opt_val);
+        split(opt_val, arr, ";");
+        startref = ""; relink = ""; ts1 = ""; ts2 = "";
+        for(i=1; i<=length(arr); i++) {
+            split(arr[i],kv,"=");
+            if (kv[1] == "StartRef" && kv[2] != "") startref = kv[2];
+            if (kv[1] == "RelinkTime" && kv[2] != "") relink = kv[2];
+            if (kv[1] ~ /^TS1_/ && kv[2] != "") ts1 = ts1 (ts1 ? ", " : "") kv[2];
+            if (kv[1] ~ /^TS2_/ && kv[2] != "") ts2 = ts2 (ts2 ? ", " : "") kv[2];
+        }
+        options = "      \033[1;34m" opt_raw "\033[0m\n"
+        options = options "      \033[33m↳ StartRef: " (startref?startref:"(Keiner)") 
+        options = options " | Relink: " (relink?relink" Min":"(Aus)") 
+        options = options " | TS1 Statisch: [" (ts1?ts1:"-") "]" 
+        options = options " | TS2 Statisch: [" (ts2?ts2:"-") "]\033[0m"
+    }
+    
+    # Rewrite-Regeln in Klartext übersetzen & ausrechnen
+    $1 ~ /^(TGRewrite|SrcRewrite|PCRewrite|TypeRewrite)/ { 
+        if ($2 != "") { # Nur verarbeiten, wenn die Regel nicht leer ist
+            rule_raw = $0
+            split($0, parts, "=");
+            rule_name = parts[1];
+            split(parts[2], v, ",");
+            
+            range_in = v[2]; if (v[5]>1) range_in = v[2] " - " (v[2] + v[5] - 1);
+            range_out = v[4]; if (v[5]>1) range_out = v[4] " - " (v[4] + v[5] - 1);
+            
+            type_str = "ID";
+            if (rule_name ~ /^TG/) type_str = "Talkgroup(s)";
+            if (rule_name ~ /^PC/) type_str = "Privatruf(e)";
+            
+            explanation = "Leitet " type_str " " range_in " vom Funkgerät (TS " v[1] ") ➔ Ins DMR-Netz (TS " v[3] ") als " type_str " " range_out;
+            rules = rules "      \033[36m" rule_raw "\033[0m\n      \033[33m↳ " explanation "\033[0m\n"
+        }
+    }
+    
+    # PassAll-Warnungen
+    $1 ~ /^PassAll/ {
+        rules = rules "      \033[36m" $0 "\033[0m\n      \033[1;31m↳ WARNUNG: Lässt ALLE " (($1 ~ /TG/)?"Gruppenrufe":"Privatrufe") " ungefiltert durch!\033[0m\n"
+    }
+    
+    END {
+        if (section != "" && has_enabled == 1) {
+            status_color = (enabled == 1) ? "\033[1;32m🟢 AKTIV  \033[0m" : "\033[1;31m🔴 INAKTIV\033[0m";
+            printf "%s %-22s", status_color, section;
+            if (name != "") printf " | %-20s", name;
+            if (port != "") printf " | Port: %s", port;
+            printf "\n";
+            if (enabled == 1) {
+                if (options != "") printf "%s\n", options;
+                if (rules != "") printf "%s", rules;
+                printf "\n";
+            }
+        }
+    }' "$target_file"
+    echo ""
+}
+
+if [ "$1" == "info" ]; then
+    analyze_config
+    exit 0
+fi
+
+# --- Kernlogik (Wächter) ---
+if [ ! -f "$master_backup" ]; then
+    echo "Erstmaliges Backup wird erstellt: $master_backup"
+    sudo cp "$target_file" "$master_backup"
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - INIT - Master Backup erstellt." >> "$log_file"
+    exit 0
+fi
+
+if diff -q "$target_file" "$master_backup" > /dev/null; then
+    echo -e "\e[1;32m[OK]\e[0m Keine unautorisierten Änderungen in dmrgateway gefunden."
+    exit 0
+fi
+
+echo -e "\e[1;31m[ACHTUNG]\e[0m Abweichung in $target_file erkannt!"
+echo "WPSD hat die Datei überschrieben oder es gab manuelle Änderungen."
+
+while true; do
+    echo "Was möchtest du tun?"
+    echo " [D]iff    : Änderungen farbig anzeigen"
+    echo " [R]estore : Master-Backup wiederherstellen"
+    echo " [U]pdate  : Aktuelle Datei als neues Master-Backup speichern"
+    echo " [I]gnore  : Nichts tun und beenden"
+    read -p "Deine Wahl (D/R/U/I): " choice
+
+    case "$choice" in
+        [dD])
+            echo -e "\n--- Detaillierte Änderungen (Rot = Alt / Grün = Neu) ---"
+            diff -u "$master_backup" "$target_file" | awk '
+                /^\+/ { print "\033[32m" $0 "\033[0m"; next }
+                /^\-/ { print "\033[31m" $0 "\033[0m"; next }
+                { print }'
+            echo ""
+            ;;
+        [rR])
+            echo -e "\n\e[1;33mFolgende unautorisierte Änderungen werden JETZT gelöscht und repariert:\e[0m"
+            diff -u "$target_file" "$master_backup" | awk '
+                /^\+/ { print "\033[32m" $0 "\033[0m"; next }
+                /^\-/ { print "\033[31m" $0 "\033[0m"; next }
+                { print }'
+            echo ""
+            
+            echo -e "\e[1;36m>> Stoppe Funk-Dienste (Display meldet OFFLINE)...\e[0m"
+            sudo systemctl stop dmrgateway.service mmdvmhost.service
+            sleep 2
+            
+            echo -e "\e[1;36m>> Überschreibe Systemdatei mit Master-Backup...\e[0m"
+            sudo cp "$master_backup" "$target_file"
+            echo "$(date '+%Y-%m-%d %H:%M:%S') - RESTORE - Master wiederhergestellt." >> "$log_file"
+            
+            echo -e "\e[1;36m>> Starte Funk-Dienste neu (Display zeigt Initializing)...\e[0m"
+            sudo systemctl start dmrgateway.service mmdvmhost.service
+            sleep 2
+            
+            echo -e "\e[1;32m[OK] All Services restarted and running! Sicherer Zustand wiederhergestellt.\e[0m\n"
+            break
+            ;;
+        [uU])
+            sudo cp "$target_file" "$master_backup"
+            echo "$(date '+%Y-%m-%d %H:%M:%S') - UPDATE - Neues Master-Backup angelegt." >> "$log_file"
+            echo -e "\e[1;32mNeues Master-Backup gespeichert.\e[0m"
+            break
+            ;;
+        [iI])
+            echo "Abbruch."
+            break
+            ;;
+        *)
+            echo "Ungültige Eingabe."
+            ;;
+    esac
+done
