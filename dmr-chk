@@ -1,6 +1,6 @@
 #!/bin/bash
 # dmr-chk - WPSD dmrgateway protector & analyzer
-# Zielsystem: wpsd-12 (10.0.0.211)
+# Zielsystem: IP des WPSD-Hotspots
 
 target_file="/etc/dmrgateway"
 master_backup="/home/pi-star/dmrgateway.master"
