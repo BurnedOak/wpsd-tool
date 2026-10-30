@@ -1,0 +1,1 @@
+wpsd-tool is a simple helper to identify, safe and restore changes in your dmrgateway configuration files, that are altered every time you change something in your settings, even if it´s just a display parameter! those overwrites are hard coded by the WPSD team and can´t be changed by yourself!
