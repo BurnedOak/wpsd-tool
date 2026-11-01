@@ -1,4 +1,6 @@
 Philosophie & Konzept
+
+
 WPSD ist eine hervorragende und mächtige Dashboard-Plattform für digitale Hotspots. Es hat jedoch eine architektonische Eigenheit: Bei Speicherungen im Web-Interface werden oft individuelle Routing-Entscheidungen (wie manuell angelegte statische Talkgroups oder erweiterte Rewrite-Regeln) im Hintergrund gnadenlos überschrieben oder gelöscht.
 
 Dieses WPSD - Gateway Tool gibt dem Funker die volle Kontrolle über sein Gateway zurück. Es agiert als echter Watchdog (Wächter): Es analysiert die Konfiguration tiefgreifend bis auf die Dateisystemebene, deckt unautorisierte Änderungen auf und ermöglicht die sofortige Wiederherstellung einer gesicherten Master-Konfiguration. Du kannst WPSD endlich "unter die Haube" schauen und exakt verstehen, wie dein Traffic geroutet wird.
