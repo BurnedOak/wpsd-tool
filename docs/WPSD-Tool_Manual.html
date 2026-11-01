@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="de" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WPSD - Gateway Tool | Handbuch</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        shack: {
+                            bg: '#0b1329',
+                            card: '#1e293b',
+                            cardBorder: '#334155',
+                            accent: '#3b82f6',
+                            accentHover: '#2563eb',
+                            success: '#22c55e',
+                            warning: '#f59e0b',
+                            danger: '#ef4444',
+                            text: '#f8fafc',
+                            muted: '#94a3b8'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0b1329;
+            color: #f8fafc;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            scroll-behavior: smooth;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #0b1329;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #3b82f6;
+        }
+        .terminal-block {
+            background-color: #050b18;
+            color: #cbd5e1;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.75rem;
+            line-height: 1.4;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #334155;
+            overflow-x: auto;
+            white-space: pre;
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between custom-scrollbar">
+
+    <!-- MAIN CONTAINER -->
+    <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full space-y-4">
+
+        <!-- ZONE 1: TITELBLOCK -->
+        <header class="bg-shack-card p-5 rounded-xl border border-shack-cardBorder shadow-md">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-3 italic">
+                <!-- Branding -->
+                <div class="flex items-center space-x-3">
+                    <div class="bg-shack-accent/20 p-2.5 rounded-lg border border-shack-accent/40">
+                        <i class="fa-solid fa-satellite-dish text-2xl text-shack-accent"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold tracking-wide text-white">
+                            WPSD - Gateway Tool <sup class="text-white font-normal">©</sup>&nbsp;&nbsp;&nbsp;<span class="text-xs text-shack-accent not-italic">v0.9.2 beta</span>
+                        </h1>
+                        <p class="text-base text-shack-muted">DMR Konfiguration Safe / Restore &amp; Analyse</p>
+                    </div>
+                </div>
+
+                <!-- Uhrenblock -->
+                <div class="text-right">
+                    <div class="text-xl font-mono font-bold tracking-wider">
+                        <span class="text-white" id="local-clock">00:00:00</span>
+                        <span class="text-shack-muted mx-1.5">|</span>
+                        <span class="text-white" id="utc-clock">00:00:00</span> <span class="text-shack-danger text-sm font-normal">UTC</span>
+                    </div>
+                    <div class="text-sm text-shack-muted font-mono" id="utc-date">00.00.0000</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- ZONE 2: QUICK NAVIGATION & BRANDING -->
+        <section class="bg-shack-card px-5 py-3 rounded-xl border border-shack-cardBorder shadow-md flex flex-wrap justify-between items-center text-sm text-shack-muted gap-2">
+            <div class="flex items-center space-x-4 italic text-base">
+                <span class="flex items-center space-x-2">
+                    <span class="not-italic">🇦🇹</span>
+                    <span class="text-white font-bold text-base">Radio Amateur Club Turm 13 "Genoveva"</span>
+                </span>
+            </div>
+
+            <!-- JUMP LINKS -->
+            <div class="flex items-center space-x-3 not-italic flex-wrap gap-y-2">
+                <a href="#backup" class="px-3 py-1 bg-shack-bg border border-shack-warning/50 text-shack-warning hover:bg-shack-warning hover:text-white text-xs font-bold rounded transition">
+                    <i class="fa-solid fa-triangle-exclamation mr-1"></i> WICHTIG: Backup
+                </a>
+                <a href="#installation" class="px-3 py-1 bg-shack-bg border border-shack-accent/50 text-shack-accent hover:bg-shack-accent hover:text-white text-xs font-bold rounded transition">
+                    <i class="fa-brands fa-github mr-1"></i> Installation
+                </a>
+                <a href="#bedienung" class="px-3 py-1 bg-shack-bg border border-shack-accent/50 text-shack-accent hover:bg-shack-accent hover:text-white text-xs font-bold rounded transition">
+                    <i class="fa-solid fa-terminal mr-1"></i> Bedienung
+                </a>
+                <a href="#beispiele" class="px-3 py-1 bg-shack-bg border border-shack-accent/50 text-shack-accent hover:bg-shack-accent hover:text-white text-xs font-bold rounded transition">
+                    <i class="fa-solid fa-desktop mr-1"></i> Praxis-Beispiele
+                </a>
+                <a href="#automation" class="px-3 py-1 bg-shack-bg border border-shack-success/50 text-shack-success hover:bg-shack-success hover:text-white text-xs font-bold rounded transition">
+                    <i class="fa-solid fa-robot mr-1"></i> Automation & Logs
+                </a>
+                <a href="#lexikon" class="px-3 py-1 bg-shack-bg border border-shack-success/50 text-shack-success hover:bg-shack-success hover:text-white text-xs font-bold rounded transition">
+                    <i class="fa-solid fa-book mr-1"></i> Parameter Lexikon
+                </a>
+            </div>
+        </section>
+
+        <!-- ZONE 3: KONTENT KACHELN -->
+        
+        <!-- PRÄAMBEL -->
+        <section class="bg-shack-card p-5 rounded-xl border border-shack-cardBorder shadow-md space-y-4">
+            <h2 class="text-lg font-bold text-white flex items-center italic">
+                <i class="fa-solid fa-circle-info text-shack-accent mr-2.5"></i> Philosophie &amp; Konzept
+            </h2>
+            <div class="text-sm text-slate-300 space-y-3 leading-relaxed">
+                <p>
+                    WPSD ist eine hervorragende und mächtige Dashboard-Plattform für digitale Hotspots. Es hat jedoch eine architektonische Eigenheit: Bei Speicherungen im Web-Interface werden oft individuelle Routing-Entscheidungen (wie manuell angelegte statische Talkgroups oder erweiterte Rewrite-Regeln) im Hintergrund gnadenlos überschrieben oder gelöscht.
+                </p>
+                <p>
+                    Dieses <strong>WPSD - Gateway Tool</strong> gibt dem Funker die volle Kontrolle über sein Gateway zurück. Es agiert als echter <strong>Watchdog (Wächter)</strong>: Es analysiert die Konfiguration tiefgreifend bis auf die Dateisystemebene, deckt unautorisierte Änderungen auf und ermöglicht die sofortige Wiederherstellung einer gesicherten Master-Konfiguration. Du kannst WPSD endlich "unter die Haube" schauen und exakt verstehen, wie dein Traffic geroutet wird.
+                </p>
+                <p>
+                    <strong>Zero-Overhead Architektur:</strong> Das gesamte Tool besteht aus einem einzigen, hochoptimierten Bash-Skript. Es benötigt keine Datenbanken, keine ressourcenfressenden Hintergrunddienste (Dämonen) und keine externen APIs. <strong class="text-shack-success">Der Ressourcenverbrauch (CPU/RAM) auf dem Hotspot liegt bei exakt 0%</strong>, wenn das Tool nicht gerade aktiv vom Benutzer aufgerufen oder einmalig in der Nacht durch den winzigen Cronjob getriggert wird.
+                </p>
+                <div class="p-3 bg-shack-bg border-l-4 border-shack-danger rounded text-shack-muted italic mt-2">
+                    <i class="fa-solid fa-flask text-shack-danger mr-1"></i> <strong>Experimenteller Charakter:</strong> Dieses Tool greift aktiv in das Dateisystem und die Dienste des Hotspots ein. Die Nutzung erfolgt ausdrücklich auf eigene Gefahr.
+                </div>
+            </div>
+        </section>
+
+        <!-- WICHTIG: DATENSICHERUNG -->
+        <section id="backup" class="bg-shack-card p-5 rounded-xl border border-shack-warning/50 shadow-md space-y-4">
+            <h2 class="text-lg font-bold text-shack-warning flex items-center italic">
+                <i class="fa-solid fa-shield-halved mr-2.5"></i> ZWINGEND ERFORDERLICH: WPSD System-Backup
+            </h2>
+            <div class="text-sm text-slate-300 space-y-3">
+                <p>
+                    Bevor du dieses Tool installierst und das erste Mal ausführst, muss dein WPSD-System absolut fehlerfrei funktionieren. Das Tool legt beim ersten Start eine Master-Kopie deiner aktuellen Konfiguration an. Ist diese bereits fehlerhaft, sicherst du den Fehler mit ab!
+                </p>
+                <div class="p-4 bg-shack-bg/60 rounded border border-shack-cardBorder">
+                    <p class="font-bold text-white mb-2">Führe jetzt zwingend diese Schritte im WPSD Web-Dashboard aus:</p>
+                    <ol class="list-decimal list-inside space-y-1 text-shack-accent font-mono text-xs">
+                        <li>Klicke oben im Menü auf <span class="text-white bg-shack-card px-1 rounded">Admin</span></li>
+                        <li>Wähle <span class="text-white bg-shack-card px-1 rounded">Advanced</span></li>
+                        <li>Klicke im Tools-Menü auf <span class="text-white bg-shack-card px-1 rounded">Datensicherung (Backup/Restore)</span></li>
+                        <li>Lade das ZIP-Archiv herunter und lege es sicher auf deinem Computer ab.</li>
+                    </ol>
+                </div>
+            </div>
+        </section>
+
+        <!-- INSTALLATION VIA GITHUB -->
+        <section id="installation" class="bg-shack-card p-5 rounded-xl border border-shack-cardBorder shadow-md space-y-4">
+            <h2 class="text-lg font-bold text-white flex items-center italic">
+                <i class="fa-brands fa-github text-shack-accent mr-2.5"></i> Deployment &amp; Installation
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="text-sm text-slate-300 space-y-3 leading-relaxed">
+                    <p>
+                        Die Installation erfolgt aus unserem zentralen GitHub-Repository direkt auf deinen Hotspot. Dadurch stellst du sicher, dass du immer den getesteten und fehlerfreien Code-Stand erhältst.
+                    </p>
+                    <ol class="list-decimal list-inside space-y-2">
+                        <li>Öffne ein Terminal (SSH) und logge dich als Benutzer <code class="text-shack-accent bg-shack-bg px-1 rounded">pi-star</code> auf deinem Hotspot ein.</li>
+                        <li>Lade das Tool mit dem <code class="text-shack-accent bg-shack-bg px-1 rounded">wget</code>-Befehl aus dem Netz.</li>
+                        <li>Mache die Datei ausführbar (<code class="text-shack-accent bg-shack-bg px-1 rounded">chmod +x</code>).</li>
+                        <li>Starte das Tool einmalig, um das Master-Backup initial zu erzeugen.</li>
+                    </ol>
+                </div>
+                <!-- Terminal Fenster -->
+                <div class="terminal-block flex flex-col justify-center">
+                    <div class="text-shack-muted mb-2"># 1. Datei von GitHub laden</div>
+                    <div class="text-shack-success mb-4">wget https://raw.githubusercontent.com/BurnedOak/wpsd-tool/main/dmr-chk</div>
+                    
+                    <div class="text-shack-muted mb-2"># 2. Ausführungsrechte setzen</div>
+                    <div class="text-shack-success mb-4">chmod +x dmr-chk</div>
+
+                    <div class="text-shack-muted mb-2"># 3. Erster Start (Master-Backup anlegen)</div>
+                    <div class="text-shack-success">./dmr-chk</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- BEDIENUNG -->
+        <section id="bedienung" class="bg-shack-card p-5 rounded-xl border border-shack-cardBorder shadow-md space-y-4">
+            <h2 class="text-lg font-bold text-white flex items-center italic">
+                <i class="fa-solid fa-terminal text-shack-accent mr-2.5"></i> Bedienung: Wächter & Analyse
+            </h2>
+            <div class="text-sm text-slate-300 space-y-4">
+                
+                <h3 class="font-bold text-white border-b border-shack-cardBorder pb-1 text-base"><i class="fa-solid fa-shield-halved text-shack-warning mr-1"></i> Der Wächter-Modus</h3>
+                <p>Das Skript wird im Terminal des Hotspots durch die simple Eingabe von <code class="bg-shack-bg text-shack-accent px-1 rounded font-mono">./dmr-chk</code> aufgerufen. Es vergleicht sofort die aktive Systemdatei mit deiner hinterlegten Master-Kopie.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono text-xs">
+                    <div class="p-3 bg-shack-bg rounded border border-shack-cardBorder/60">
+                        <strong class="text-shack-success">Szenario A: Keine Änderungen</strong><br><br>
+                        Wenn WPSD nichts überschrieben hat, meldet das System sofort:<br>
+                        <span class="text-shack-success">[OK]</span> Keine unautorisierten Änderungen in dmrgateway gefunden.
+                    </div>
+                    <div class="p-3 bg-shack-bg rounded border border-shack-danger/50">
+                        <strong class="text-shack-danger">Szenario B: Abweichung erkannt!</strong><br><br>
+                        Das Skript schlägt Alarm und bietet ein Aktions-Menü:<br>
+                        <span class="text-shack-accent">[D]</span>iff : Änderungen farbig anzeigen<br>
+                        <span class="text-shack-success">[R]</span>estore : Master-Backup wiederherstellen<br>
+                        <span class="text-shack-warning">[U]</span>pdate : Aktuelle Datei als Master speichern<br>
+                        <span class="text-shack-muted">[I]</span>gnore : Nichts tun und beenden (Test-Modus)
+                    </div>
+                </div>
+                
+                <p>
+                    Wählst du <strong>[R]</strong>, repariert das System die Konfigurationsdatei sofort. Um diese Änderung wirksam zu machen, stoppt das Skript kurz die Funk-Dienste (OLED zeigt <em>OFFLINE</em>) und startet sie neu (OLED zeigt <em>Initializing</em>). Dein Hotspot ist danach sofort wieder mit den korrekten Einstellungen einsatzbereit.
+                </p>
+
+                <h3 class="font-bold text-white mt-6 border-b border-shack-cardBorder pb-1 text-base"><i class="fa-solid fa-magnifying-glass text-shack-accent mr-1"></i> Die Info-Analyse</h3>
+                <p>
+                    Mit dem Aufruf <code class="bg-shack-bg text-shack-accent px-1 rounded font-mono">./dmr-chk info</code> startest du eine tiefgreifende Systemanalyse. Das Tool durchleuchtet:
+                </p>
+                <ul class="list-disc list-inside space-y-1 ml-2 text-shack-muted">
+                    <li><strong class="text-white">Station & Gateway:</strong> Frequenzen, Standort und grundlegende Parameter.</li>
+                    <li><strong class="text-white">Datenbanken:</strong> Den exakten Füllstand lokaler DMR-ID, Brandmeister und DMR+ Listen sowie den Zeitpunkt des nächsten automatischen Updates.</li>
+                    <li><strong class="text-white">Wächter-Historie:</strong> Überprüft das Log auf die letzte ausgeführte Aktion.</li>
+                    <li><strong class="text-white">Brandmeister-Favoriten:</strong> Gleicht die im WPSD-Dashboard gespeicherten Favoriten-TGs mit der offiziellen Brandmeister-Liste ab. Inoffizielle oder fehlerhafte TGs (z.B. eigens angelegte Club-TGs) werden markiert.</li>
+                    <li><strong class="text-white">Status-Matrix:</strong> Übersetzt die komplexen Rewrite-Regeln und Optionen in verständliches Funker-Deutsch (siehe Parameter Lexikon).</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- PRAXIS BEISPIELE (TERMINAL AUSGABEN) -->
+        <section id="beispiele" class="bg-shack-card p-5 rounded-xl border border-shack-cardBorder shadow-md space-y-4">
+            <h2 class="text-lg font-bold text-white flex items-center italic">
+                <i class="fa-solid fa-desktop text-shack-accent mr-2.5"></i> Praxis-Beispiele (Terminal)
+            </h2>
+            <p class="text-sm text-slate-300 mb-4">
+                Hier siehst du, wie das Tool in der Praxis reagiert. Alle Ausgaben sind exakte Abbilder des Terminals.
+            </p>
+
+            <div class="space-y-6">
+                <!-- Beispiel 1 -->
+                <div>
+                    <h3 class="text-sm font-bold text-shack-success mb-2">1. Der unauffällige Check (Alles im grünen Bereich)</h3>
+                    <div class="terminal-block">pi-star@wpsd-hotspot:~ $ ./dmr-chk
+
+========================================================
+ DMR-CHK WÄCHTER CHECK - 2026-11-01 03:04:56
+========================================================
+<span class="text-shack-success">[OK]</span> Keine unautorisierten Änderungen in dmrgateway gefunden.
+========================================================</div>
+                </div>
+
+                <!-- Beispiel 2 -->
+                <div>
+                    <h3 class="text-sm font-bold text-shack-danger mb-2">2. Die Login-Warnung (Alarmfall durch File-Flag)</h3>
+                    <p class="text-xs text-shack-muted mb-2">Wenn der automatische Nacht-Check eine Abweichung feststellt, erhältst du bei der nächsten SSH-Anmeldung sofort diese Meldung, bevor du überhaupt etwas eintippst:</p>
+                    <div class="terminal-block">pi-star@wpsd-hotspot:~ $ bash
+
+<span class="text-shack-danger font-bold">========================================================
+ ACHTUNG! DMR-CHK hat in der Nacht eine Änderung blockiert!
+ Bitte führe sofort './dmr-chk' aus, um es zu prüfen!
+========================================================</span>
+
+pi-star@wpsd-hotspot:~ $</div>
+                </div>
+
+                <!-- Beispiel 3 -->
+                <div>
+                    <h3 class="text-sm font-bold text-shack-accent mb-2">3. Konfigurations-Überschreibung durch WPSD & anschließender RESTORE</h3>
+                    <p class="text-xs text-shack-muted mb-2">WPSD hat im Hintergrund ungefragt Rewrite-Regeln entfernt und verändert. Wir prüfen das mit <strong>[D]</strong> und reparieren es mit <strong>[R]</strong>.</p>
+                    <div class="terminal-block">pi-star@wpsd-hotspot:~ $ ./dmr-chk
+
+========================================================
+ DMR-CHK WÄCHTER CHECK - 2026-11-01 03:15:15
+========================================================
+<span class="text-shack-danger font-bold">[ACHTUNG]</span> Abweichung in /etc/dmrgateway erkannt!
+WPSD hat die Datei überschrieben oder es gab manuelle Änderungen.
+Was möchtest du tun?
+ [D]iff    : Änderungen farbig anzeigen
+ [R]estore : Master-Backup wiederherstellen
+ [U]pdate  : Aktuelle Datei als neues Master-Backup speichern
+ [I]gnore  : Nichts tun und beenden
+Deine Wahl (D/R/U/I): d
+
+--- Detaillierte Änderungen (Rot = Alt / Grün = Neu) ---
+--- /home/pi-star/dmrgateway.master    2026-11-01 03:09:39.824912957 +0100
++++ /etc/dmrgateway    2026-11-01 03:13:06.573233255 +0100
+@@ -54,10 +54,6 @@
+ Enabled=1
+ Address=2322.master.brandmeister.network
+ Port=62031
+<span class="text-shack-danger">-TGRewrite0=</span>
+<span class="text-shack-danger">-TGRewrite1=</span>
+<span class="text-shack-danger">-TGRewrite2=</span>
+<span class="text-shack-danger">-TGRewrite3=</span>
+ PassAllPC0=1
+ PassAllTG0=1
+ PassAllPC1=2
+@@ -67,14 +63,18 @@
+ Debug=0
+ Location=1
+ Name=BM_2322_Austria
+<span class="text-shack-success">+TGRewrite0=2,9,2,9,1</span>
+<span class="text-shack-success">+PCRewrite0=2,94000,2,4000,1001</span>
+<span class="text-shack-success">+TypeRewrite0=2,9990,2,9990</span>
+<span class="text-shack-success">+SrcRewrite0=2,4000,2,9,1001</span>
+ 
+ [DMR Network 2]
+ Enabled=1
+ Address=xxx.xxx.xx.xx
+ Port=55555
+<span class="text-shack-danger">-TGRewrite0=2,1,2,1,7</span>
+<span class="text-shack-danger">-TGRewrite1=2,8,2,6,1</span>
+<span class="text-shack-danger">-TGRewrite2=2,11,2,11,79</span>
+<span class="text-shack-success">+TGRewrite0=2,8,2,9,1</span>
+<span class="text-shack-success">+TGRewrite1=1,8000001,1,1,999999</span>
+<span class="text-shack-success">+TGRewrite2=2,8000001,2,1,999999</span>
+
+Was möchtest du tun?
+ [D]iff    : Änderungen farbig anzeigen
+ [R]estore : Master-Backup wiederherstellen
+ [U]pdate  : Aktuelle Datei als neues Master-Backup speichern
+ [I]gnore  : Nichts tun und beenden
+Deine Wahl (D/R/U/I): r
+
+Folgende unautorisierte Änderungen werden JETZT gelöscht und repariert:
+<span class="text-shack-muted">(... Ausgabe des Reverse-Diffs übersprungen ...)</span>
+
+<span class="text-shack-accent">>> Stoppe Funk-Dienste (Display meldet OFFLINE)...</span>
+Stopping 'dmrgateway.service', but its triggering units are still active:
+dmrgateway.timer
+Stopping 'mmdvmhost.service', but its triggering units are still active:
+mmdvmhost.timer
+<span class="text-shack-accent">>> Überschreibe Systemdatei mit Master-Backup...</span>
+<span class="text-shack-accent">>> Starte Funk-Dienste neu (Display zeigt Initializing)...</span>
+<span class="text-shack-success">[OK] All Services restarted and running! Sicherer Zustand wiederhergestellt.</span>
+
+========================================================</div>
+                </div>
+
+                <!-- Beispiel 4 -->
+                <div>
+                    <h3 class="text-sm font-bold text-shack-warning mb-2">4. Absichtliche Änderung dauerhaft übernehmen (UPDATE)</h3>
+                    <p class="text-xs text-shack-muted mb-2">Du hast selbst eine Änderung vorgenommen (hier eine Kommentarzeile angefügt). Das Tool warnt, aber du legitimierst die Änderung mit <strong>[U]</strong>.</p>
+                    <div class="terminal-block">Was möchtest du tun?
+ [D]iff    : Änderungen farbig anzeigen
+ [R]estore : Master-Backup wiederherstellen
+ [U]pdate  : Aktuelle Datei als neues Master-Backup speichern
+ [I]gnore  : Nichts tun und beenden
+Deine Wahl (D/R/U/I): d
+
+--- Detaillierte Änderungen (Rot = Alt / Grün = Neu) ---
+--- /home/pi-star/dmrgateway.master    2026-10-31 00:46:20.427447623 +0100
++++ /etc/dmrgateway    2026-11-01 03:07:20.796705594 +0100
+@@ -84,7 +84,7 @@
+ TGRewrite9=2,9,2,9,1
+ PCRewrite0=2,9055,2,9055,6
+ PCRewrite1=2,4000,2,4000,1001
+<span class="text-shack-danger">-Options="StartRef=4193;RelinkTime=120;UserLink=1;TS1_1=232;TS1_2=110;TS1_3=6;TS2_1=232;"</span>
+<span class="text-shack-success">+Options="StartRef=4193;RelinkTime=120;UserLink=1;TS1_1=232;TS1_2=110;TS1_3=6;TS2_1=232;TS2_4=94;"</span>
+ Password="PASSWORD"
+ Id=1234567
+ Debug=0
+
+Was möchtest du tun?
+ [D]iff    : Änderungen farbig anzeigen
+ [R]estore : Master-Backup wiederherstellen
+ [U]pdate  : Aktuelle Datei als neues Master-Backup speichern
+ [I]gnore  : Nichts tun und beenden
+Deine Wahl (D/R/U/I): u
+<span class="text-shack-success">Neues Master-Backup gespeichert.</span>
+========================================================</div>
+                </div>
+
+                <!-- Beispiel 5 -->
+                <div>
+                    <h3 class="text-sm font-bold text-shack-accent mb-2">5. Die ausführliche Dashboard-Analyse (info)</h3>
+                    <div class="terminal-block">pi-star@wpsd-hotspot:~ $ ./dmr-chk info
+
+========================================================
+ DMR-CHK ANALYSE START - 2026-11-01 03:17:57
+ Letzter Lauf: 2026-11-01 01:50:45
+========================================================
+
+<span class="text-shack-accent">=== 0. STATION & GATEWAY CONFIG ===</span>
+Station:    <span class="text-shack-warning">MYCALL - Hotspot wpsd-hotspot</span>
+Standort:   Musterstadt, AB12CD (Lat: 48.0000, Lon: 14.0000)
+Frequenzen: <span class="text-shack-success">RX 430.250 MHz / TX 430.250 MHz</span>
+QRZ/URL:    <span class="text-shack-accent">https://www.qrz.com/db/MYCALL</span>
+Voice-Anns: <span class="text-shack-success">en_US</span> (Pfad: /usr/local/etc/DMR_Audio)
+Log-Pfad:   <span class="text-shack-success">/var/log/pi-star</span>
+
+<span class="text-shack-accent">=== 1. WPSD SYSTEM-DATENBANKEN ===</span>
+DMR-IDs:       <span class="text-shack-success">315869 Einträge</span> (Stand: 2026-10-31 23:47:57)
+BM Talkgroups: <span class="text-shack-success">1853 Einträge</span>
+DMR+ TGs:      <span class="text-shack-success">277 Einträge</span>
+YSF Räume:     <span class="text-shack-success">1507 Einträge</span>
+D-Star Hosts:  <span class="text-shack-success">818 Einträge</span>
+Nächstes Hostfile-Update: <span class="text-shack-warning">Sun 2026-11-01 04:31:12</span>
+
+<span class="text-shack-accent">=== 2. WÄCHTER & LOG-STATUS ===</span>
+Letzter Wächter-Check: RESTORE - Unautorisierte Änderungen gelöscht und Master wiederhergestellt.
+
+<span class="text-shack-accent">=== 3. BRANDMEISTER DASHBOARD FAVORITEN ===</span>
+HINWEIS: Dies ist die im Dashboard hinterlegte Favoriten-Liste.
+Um zu sehen welche TGs live aktiv sind oder um Änderungen vorzunehmen:
+Gehe im WPSD-Dashboard zu -> Admin -> Brandmeister Manager!
+
+ 📌 TG 9101         <span class="text-shack-success">(WORLDWIDE-MARITIME)</span>
+ 📌 TG 232          <span class="text-shack-success">(AUSTRIA)</span>
+ 📌 TG 91           <span class="text-shack-success">(WORLD-WIDE)</span>
+ 📌 TG 232505       <span class="bg-shack-danger text-white px-1">[INOFFIZIELL / NICHT IN OFFIZIELLER LISTE]</span>
+
+<span class="text-shack-accent">=== 4. DMRGATEWAY STATUS-MATRIX ===</span>
+<span class="text-shack-danger">🔴 INAKTIV</span> [XLX Network]          | Port: 62030
+<span class="text-shack-success">🟢 AKTIV  </span> [DMR Network 1]        | BM_2322_Austria      | Port: 62031
+      PassAllPC0=1
+      <span class="text-shack-success">↳ INFO: Gewolltes Pass-Through für ALLE Privatrufe</span>
+      PassAllTG0=1
+      <span class="text-shack-success">↳ INFO: Gewolltes Pass-Through für ALLE Gruppenrufe</span>
+
+<span class="text-shack-success">🟢 AKTIV  </span> [DMR Network 2]        | DMR+_IPSC2-OE-DMO    | Port: 55555
+      <span class="text-shack-accent">Options="StartRef=4193;RelinkTime=120;UserLink=1;TS1_1=232;TS1_2=110;TS1_3=6;"</span>
+      <span class="text-shack-warning">↳ StartRef: 4193 | Relink: 120 Min | TS1 Statisch: [232, 110, 6] | TS2 Statisch: [-]</span>
+      <span class="text-shack-accent">TGRewrite0=2,1,2,1,7</span>
+      <span class="text-shack-warning">↳ Leitet Talkgroup(s) 1 - 7 vom Funkgerät (TS 2) ➔ Ins DMR-Netz (TS 2) als Talkgroup(s) 1 - 7 (LOCAL)</span>
+      <span class="text-shack-accent">PCRewrite1=2,4000,2,4000,1001</span>
+      <span class="text-shack-warning">↳ Leitet Privatruf(e) 4000 - 5000 vom Funkgerät (TS 2) ➔ Ins DMR-Netz (TS 2) als Privatruf(e) 4000 - 5000 (DISCONNECT)</span>
+
+<span class="text-shack-danger">🔴 INAKTIV</span> [DMR Network 3]        | HBLink               | Port: 5555
+<span class="text-shack-danger">🔴 INAKTIV</span> [APRS]                 | Port: 8673
+
+========================================================
+ DMR-CHK ANALYSE ENDE - 2026-11-01 03:17:58
+========================================================</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- AUTOMATION & LOGS -->
+        <section id="automation" class="bg-shack-card p-5 rounded-xl border border-shack-cardBorder shadow-md space-y-4">
+            <h2 class="text-lg font-bold text-white flex items-center italic">
+                <i class="fa-solid fa-robot text-shack-accent mr-2.5"></i> Automation & Lückenloses Logging
+            </h2>
+            <div class="text-sm text-slate-300 space-y-4">
+                
+                <h3 class="font-bold text-white border-b border-shack-cardBorder pb-1">Der Automatische Nacht-Check (Cronjob)</h3>
+                <p>
+                    Da nicht jeder Hotspot 24/7 überwacht wird, bietet das Tool eine optionale, <strong>komplett lautlose Automation</strong>. 
+                    Mit dem Befehl <code class="bg-shack-bg text-shack-accent px-1 rounded font-mono">./dmr-chk install-cron</code> installierst du einen täglichen Check, der jede Nacht um 03:00 Uhr die Integrität deiner Konfiguration prüft. 
+                    (Deinstallation jederzeit mit <code class="bg-shack-bg text-shack-accent px-1 rounded font-mono">./dmr-chk remove-cron</code>).
+                </p>
+                <div class="p-3 bg-shack-bg border-l-4 border-shack-danger rounded text-shack-muted">
+                    <i class="fa-solid fa-bell text-shack-danger mr-1"></i> <strong>Die Login-Warnung:</strong> Findet der nächtliche Check eine Abweichung, verbraucht er keine Ressourcen für aufwendige Alarme. Stattdessen setzt er ein unsichtbares File-Flag. Sobald du dich das nächste Mal per SSH (Terminal) einloggst, <strong>explodiert eine rote Warnmeldung</strong> auf deinem Bildschirm und fordert dich auf, den Wächter auszuführen (siehe Praxis-Beispiele)!
+                </div>
+
+                <h3 class="font-bold text-white mt-4 border-b border-shack-cardBorder pb-1">Das Monats-Logbuch</h3>
+                <p>
+                    Jeder Aufruf (egal ob manueller Wächter, Info-Analyse oder der nächtliche Cronjob) wird lückenlos und sauber im Verzeichnis <code class="text-shack-muted font-mono">/home/pi-star/</code> protokolliert.
+                </p>
+                <ul class="list-disc list-inside space-y-1 ml-2 text-shack-muted">
+                    <li><strong>Monats-Rotation:</strong> Das System legt jeden Monat automatisch eine neue Textdatei an (z.B. <code class="font-mono">dmr-chk_log_2026-10.txt</code>).</li>
+                    <li><strong>Auto-Archivierung:</strong> Zum Monatswechsel wird das alte Logbuch als komprimierte <code class="font-mono">.zip</code>-Datei in den Ordner <code class="font-mono">dmr_log_archive</code> verschoben.</li>
+                    <li><strong>Self-Cleaning:</strong> Archive, die älter als 365 Tage (1 Jahr) sind, werden vom Tool automatisch und rückstandsfrei vom Hotspot gelöscht, um SD-Karten-Speicherplatz zu schonen.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- PARAMETER LEXIKON (PROFESSOR MODUS) -->
+        <section id="lexikon" class="bg-shack-card p-5 rounded-xl border border-shack-cardBorder shadow-md space-y-4">
+            <h2 class="text-lg font-bold text-white flex items-center italic">
+                <i class="fa-solid fa-book text-shack-accent mr-2.5"></i> Professor-Modus: DMRGateway Parameter Lexikon
+            </h2>
+            <p class="text-sm text-slate-300">
+                Mit dem Befehl <code class="bg-shack-bg text-shack-accent px-1 rounded font-mono">./dmr-chk info</code> analysiert das Tool deine aktive Konfiguration und übersetzt die komplexen Maschinen-Codes in lesbares "Funker-Deutsch". Hier ist die Erklärung aller wichtigen System-Parameter:
+            </p>
+
+            <div class="space-y-3 mt-4">
+                
+                <!-- Options Block -->
+                <div class="p-3 bg-shack-bg rounded border border-shack-cardBorder">
+                    <h3 class="text-sm font-bold text-shack-accent mb-2"><i class="fa-solid fa-gears mr-1"></i> Options-Kette (DMR+)</h3>
+                    <div class="grid grid-cols-1 lg:grid-cols-4 gap-2 text-xs font-mono items-center text-center">
+                        <div class="bg-shack-card border border-shack-cardBorder rounded py-1 text-white">
+                            <span class="text-shack-muted block text-[10px]">StartRef</span>
+                            z.B. 4193
+                        </div>
+                        <div class="bg-shack-card border border-shack-cardBorder rounded py-1 text-white lg:col-span-3 text-left px-3 font-sans text-slate-300">
+                            Der Reflektor, mit dem sich der Hotspot beim Booten (oder nach Inaktivität) standardmäßig verbindet. Ein Wert von 4000 bedeutet "unverbunden".
+                        </div>
+
+                        <div class="bg-shack-card border border-shack-cardBorder rounded py-1 text-white">
+                            <span class="text-shack-muted block text-[10px]">RelinkTime</span>
+                            z.B. 120
+                        </div>
+                        <div class="bg-shack-card border border-shack-cardBorder rounded py-1 text-white lg:col-span-3 text-left px-3 font-sans text-slate-300">
+                            Die Zeit in Minuten, nach der das System nach einem manuellen Wechsel automatisch wieder auf den StartRef zurückfällt.
+                        </div>
+
+                        <div class="bg-shack-card border border-shack-cardBorder rounded py-1 text-white">
+                            <span class="text-shack-muted block text-[10px]">TS1_x / TS2_x</span>
+                            Statische TGs
+                        </div>
+                        <div class="bg-shack-card border border-shack-cardBorder rounded py-1 text-white lg:col-span-3 text-left px-3 font-sans text-slate-300">
+                            Hierüber teilst du dem Master-Server mit, welche Sprechgruppen (Talkgroups) dauerhaft zu dir durchgeschaltet bleiben sollen.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rewrite Block -->
+                <div class="p-3 bg-shack-bg rounded border border-shack-cardBorder">
+                    <h3 class="text-sm font-bold text-shack-success mb-2"><i class="fa-solid fa-route mr-1"></i> Rewrite Routing-Regeln</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-sans text-slate-300">
+                        <div>
+                            <strong class="text-shack-success font-mono">TGRewrite</strong><br>
+                            Leitet Gruppenrufe (Talkgroups) um. Simplex-Hotspots haben physisch nur Timeslot 2 (TS2). Wenn das weltweite Netz jedoch TS1 verlangt, wandelt diese Regel den Sende-Slot (2) in den Ziel-Slot (1) um.
+                        </div>
+                        <div>
+                            <strong class="text-shack-success font-mono">PCRewrite</strong><br>
+                            Das exakt gleiche Prinzip wie TGRewrite, jedoch ausschließlich für Privatrufe (Private Calls). Wird fast immer für Reflektor-Steuerungen (wie PC 4000 - 5000) genutzt.
+                        </div>
+                        <div>
+                            <strong class="text-shack-success font-mono">TypeRewrite</strong><br>
+                            Wandelt die Rufart um. Damit kann z.B. ein ankommender Privatruf (wie ein Echo-Dienst) auf dem Hotspot als Gruppenruf (Talkgroup) ausgegeben werden.
+                        </div>
+                        <div>
+                            <strong class="text-shack-success font-mono">SrcRewrite</strong><br>
+                            Schreibt die Absender-ID eines eintreffenden Rufs um. So "denkt" dein Funkgerät z.B., dass die Antwort eines Reflektors auf der gewohnten Talkgroup 9 stattfindet.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PassAll Block -->
+                <div class="p-3 bg-shack-bg rounded border border-shack-danger/50">
+                    <h3 class="text-sm font-bold text-shack-danger mb-2"><i class="fa-solid fa-radiation mr-1"></i> Die PassAll-Funktion</h3>
+                    <div class="text-xs font-sans text-slate-300 leading-relaxed">
+                        <strong class="text-white font-mono">PassAllTG / PassAllPC:</strong> Wenn diese Parameter auf "1" oder "2" (für den jeweiligen Zeitschlitz) gesetzt sind, leitet das Gateway <strong>ALLE</strong> Rufe ungefiltert durch, auch wenn keine explizite Rewrite-Regel existiert.<br>
+                        <strong class="text-shack-success mt-1 block">Tipp vom Maintainer:</strong> Dies ist das Standard-Verhalten für WPSD Hotspots im Brandmeister Netz. Beachte jedoch, dass PassAll systemweit immer nur für ein einziges Netzwerk aktiviert sein sollte, sonst kann es zu Schleifen oder Konflikten kommen.
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-shack-card border-t border-shack-cardBorder py-3 mt-auto w-full">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center text-xs text-shack-muted gap-2">
+            <div>
+                <strong>Secure Shack Server Projekt © oe5pyb 2026</strong> | WPSD - Gateway Tool
+            </div>
+            <div class="flex space-x-4 font-mono">
+                <span>Bash Scripting</span>
+                <span>•</span>
+                <span>WPSD</span>
+                <span>•</span>
+                <span>GitHub Release</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JS FOR CLOCKS ONLY -->
+    <script>
+        function updateClocks() {
+            const now = new Date();
+            document.getElementById('local-clock').textContent = now.toTimeString().substring(0, 8);
+            document.getElementById('utc-clock').textContent = now.toISOString().substring(11, 19);
+            const day = String(now.getUTCDate()).padStart(2, '0');
+            const month = String(now.getUTCMonth() + 1).padStart(2, '0');
+            document.getElementById('utc-date').textContent = `${day}.${month}.${now.getUTCFullYear()}`;
+        }
+        setInterval(updateClocks, 1000);
+        updateClocks();
+    </script>
+</body>
+</html>
